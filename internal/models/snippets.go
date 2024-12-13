@@ -8,7 +8,7 @@ import (
 
 type Snippet struct {
 	ID      int
-	Title   string
+	Title   sql.NullString // Can handle NULL values we can also make dont allow null in db
 	Content string
 	Created time.Time
 	Expires time.Time
@@ -67,5 +67,30 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 
 // This will return the 10 most recently created snippets.
 func (m *SnippetModel) Latest() ([]*Snippet, error) {
-	return nil, nil
+	stmt := `SELECT id, title, content, created, expires FROM snippets
+			WHERE expires > UTC_TIMESTAMP() 
+			ORDER BY id 
+			DESC LIMIT 10`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close() // remember always to close after err check !
+	Snippets := []*Snippet{}
+	for rows.Next() {
+		s := &Snippet{}
+		err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+		Snippets = append(Snippets, s)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err //importantttt ..don't assume that a successful iteration was completed
+		// over the whole resultset.
+	}
+	return Snippets, err
+
 }

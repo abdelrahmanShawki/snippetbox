@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,10 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *models.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -46,11 +48,12 @@ func main() {
 	}
 
 	defer db.Close()
-
+	templateCache, err := newTemplateCache()
 	app := &application{
-		errorLog: errorLog, // errorLog on lift point to some error logger by difintion and it is errorlogger we made
-		infoLog:  infoLog,  //	to lines above
-		snippets: &models.SnippetModel{DB: db},
+		errorLog:      errorLog, // errorLog on lift point to some error logger by difintion and it is errorlogger we made
+		infoLog:       infoLog,  //	to lines above
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
@@ -61,36 +64,6 @@ func main() {
 
 	infoLog.Printf("Starting server on %s ", *addr)
 
-	err = srv.ListenAndServe() // will not creat instance of our server instead we creat it with out values
-	// err := http.ListenAndServe(*addr, mux) // note this here * becuase flag string return the refrence not the value
-	// This is roughly what http.ListenAndServe does internally
-	/*
-		  func ListenAndServe(addr string, handler Handler) error {
-		    server := &Server{
-		        Addr:    addr,
-		        Handler: handler,
-		    }
-		    return server.ListenAndServe()
-			}
-	*/
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
-
-/* fmux := http.NewServeMux()
-// mux.Handle("/", http.HandlerFunc(home))  http. gandler Func wrap the home function with the http serve interface
-
-
-type home struct {
-func (h *home) ServeHTTP(w http.ResponseWriter, r *http.Request) {
- w.Write([]byte("This is my home page"))
-}
-
-mux := http.NewServeMux()
-mux.Handle("/", &home{})
-
-this also equivlant as this more manual implmenting :
-
-	type Handler interface {
- ServeHTTP(ResponseWriter, *Request)
-}
-*/
