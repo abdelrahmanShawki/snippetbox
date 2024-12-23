@@ -35,6 +35,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	err := ts.ExecuteTemplate(buff, "base", data)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	w.WriteHeader(status)

@@ -49,6 +49,9 @@ func main() {
 
 	defer db.Close()
 	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 	app := &application{
 		errorLog:      errorLog, // errorLog on lift point to some error logger by difintion and it is errorlogger we made
 		infoLog:       infoLog,  //	to lines above
