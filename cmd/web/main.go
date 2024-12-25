@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql" // New import
+	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.abdou-salama-001.net/internal/models"
 )
 
@@ -24,7 +24,7 @@ func openDB(dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := db.Ping(); err != nil { // what is ping so
+	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
@@ -37,24 +37,24 @@ func main() {
 	dsn := flag.String("dsn", "web:0000@/snippetbox?parseTime=true", "MySQL data source name")
 	flag.Parse()
 
-	// creat two loggers for info and errors
-
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := openDB(*dsn) // flag of dsn
+	db, err := openDB(*dsn)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
 	defer db.Close()
+
 	templateCache, err := newTemplateCache()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+
 	app := &application{
-		errorLog:      errorLog, // errorLog on lift point to some error logger by difintion and it is errorlogger we made
-		infoLog:       infoLog,  //	to lines above
+		errorLog:      errorLog,
+		infoLog:       infoLog,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}
@@ -70,3 +70,7 @@ func main() {
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
+
+// main - > trmplate
+// main - > internal/models
+// define err logger and inject into application

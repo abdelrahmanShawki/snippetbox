@@ -7,7 +7,7 @@ import (
 	"github.com/justinas/alice"
 )
 
-func (app *application) routes() http.Handler { //dont forget that astric refers to the type or implmentation
+func (app *application) routes() http.Handler {
 
 	router := httprouter.New()
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler { //dont forget that astric refers
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 
-	//router.Handler(http.MethodGet, "/static/", http.StripPrefix("/static", fileServer))   // fuck errors , they are fun to me
+	//router.Handler(http.MethodGet, "/static/", http.StripPrefix("/static", fileServer))   //  errors
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
 	router.HandlerFunc(http.MethodGet, "/", app.home)
@@ -26,7 +26,5 @@ func (app *application) routes() http.Handler { //dont forget that astric refers
 
 	middlewares := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
 	return middlewares.Then(router)
-	// very clean yo use  justinas/alice package also has append function
 
-	// important to mention ' conflict router isnt allowed , but gorilla/mux allow it
 }

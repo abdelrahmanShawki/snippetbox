@@ -16,8 +16,8 @@ type templateData struct {
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04") // passing layout to go , go intrpret this !
-} //  this example of creating a custom template function .
+	return t.Format("02 Jan 2006 at 15:04")
+}
 
 var functionHumanDate = template.FuncMap{
 	"humanDate": humanDate,
@@ -35,12 +35,11 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page) //get file name
 
 		ts, err := template.New(name).Funcs(functionHumanDate).ParseFiles("./ui/html/base.tmpl")
-		// ts, err := template.ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
 
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl") // note that the order is impoerant
+		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
 		if err != nil {
 			return nil, err
 		}
