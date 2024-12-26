@@ -25,7 +25,7 @@ Snippetbox is a simple web application for managing code snippets. It allows use
 1. **Clone the repository:**
 
     ```sh
-    git clone https://github.com/yourusername/snippetbox.git
+    git clone https://github.com/abdelrahmanShawki/snippetbox.git
     cd snippetbox
     ```
 
