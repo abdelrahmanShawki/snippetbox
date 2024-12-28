@@ -82,6 +82,17 @@ func main() {
 	errorLog.Fatal(err)
 }
 
-// main - > template
-// main - > internal/models
-// define err logger and inject into application
+/*
+
+session steps
+1 - setup third party to handle session management
+2 - make table sessions + index for it
+3 - add sessionManager property to app struct
+4 - define session manager + inject it into the app definition
+5 - modifiy router to dynamic handle .
+6 - modify creatPost [post] handler to put message in context of response in specific handler
+	-Stores flash message in session in db data blob
+7 - send data to front end (modify template)
+8 - path the data flash inside newTemplateData helper
+		Retrieves AND removes flash message
+*/
