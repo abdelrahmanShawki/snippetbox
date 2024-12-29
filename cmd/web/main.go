@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"github.com/alexedwards/scs/mysqlstore"
@@ -60,6 +61,7 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
 	// session manager
 
 	app := &application{
@@ -69,16 +71,24 @@ func main() {
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
 	}
-
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+		MinVersion:       tls.VersionTLS12, // Only accept TLS 1.2 or newer
+	}
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:           *addr,
+		MaxHeaderBytes: 524288, // add max header size , 1 mb by def.
+		ErrorLog:       errorLog,
+		Handler:        app.routes(),
+		TLSConfig:      tlsConfig,
+		IdleTimeout:    time.Minute,
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s ", *addr)
 
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
@@ -95,4 +105,18 @@ session steps
 7 - send data to front end (modify template)
 8 - path the data flash inside newTemplateData helper
 		Retrieves AND removes flash message
+*/
+
+/* self generated tls
+
+use generate.cert.go which is go utility used to generate public and private key (tls)
+main > use  srv.ListenAndServeTLS() instead of ListenAndServe and path keys in it
+main > set session.cookie.security to true
+now run on https , A big plus of using HTTPS is that — if a client supports HTTP/2 connections — Go’s HTTPS
+server will automatically upgrade the connection to use HTTP/2.
+
+$ echo 'tls/' >> .gitignore
+  print tls  to.  git ignore
+
+
 */
