@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/justinas/nosurf"
 	"net/http"
 )
 
@@ -41,4 +42,32 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 
+}
+func (app *application) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !app.isAuthunticated(r) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		if r.URL.Path == "/user/login" && app.isAuthunticated(r) {
+			app.infoLog.Printf("%t", app.isAuthunticated(r)) //debug
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+
+		//important here to prevent snippet creat pages to be cahsed
+		w.Header().Add("Cache-Control", "no-store")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) noSurf(next http.Handler) http.Handler {
+	scrfHandler := nosurf.New(next)
+	scrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   true,
+	})
+	return scrfHandler
 }
