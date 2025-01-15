@@ -21,6 +21,7 @@ func (app *application) routes() http.Handler {
 
 	dynamic := alice.New(app.sessionManager.LoadAndSave, app.noSurf, app.authenticate)
 
+	router.HandlerFunc(http.MethodGet, "/ping", ping)
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.snippetView))
 	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
@@ -34,7 +35,7 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodGet, "/snippet/create", protected.ThenFunc(app.snippetCreate))
 	// adding more staff to protect login access
 
-	standard := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
+	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 	return standard.Then(router)
 
 }
